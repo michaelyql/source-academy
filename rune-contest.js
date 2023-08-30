@@ -244,6 +244,34 @@ function beside_n_alternating(n, rune1, rune2) {
         : beside_n_alt_helper(n, rune1, rune2, n);
 }
 
+function stack_n_alt_helper(n, row1, row2, origin) {
+    return n < 0 
+        ? blank
+        : n === 1
+        ? (origin % 2 !== 0 ? row1: row2) 
+        : n % 2 === 0
+        ? stack_frac(
+            1 / n,
+            row1,
+            stack_n_alt_helper(n - 1, row1, row2, origin))
+        : stack_frac(
+            1 / n,
+            row2, 
+            stack_n_alt_helper(n - 1, row1, row2, origin));
+}
+
+function stack_n_alternating(n, row1, row2) {
+    return n % 2 === 0
+        ? stack_n_alt_helper(n, row1, row1, n - 1)
+        : stack_n_alt_helper(n, row1, row2);
+}
+
+const charizard_row = beside_n_alternating(8, charizard(white), blank); 
+const squirtle_row = beside_n_alternating(8, blank, squirtle(white));
+const pokemon_pattern_bg = stack_n_alternating(8, charizard_row, squirtle_row);
+
+show(pokemon_pattern_bg);
+
 
 
 
