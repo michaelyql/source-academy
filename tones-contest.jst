@@ -1,0 +1,63 @@
+
+function parse_list(notes) {
+    return notes === 0
+            ? null
+            : pair(notes % 10, parse_list(math_floor(notes / 10)));
+}
+
+function generate_sound_list(mapping, instrument, notes, intervals) {
+    function loop(mapping, intervals) {
+        return notes === 0 
+                ? null  
+                : pair(instrument(
+                          list_ref(mapping, notes % 10), 
+                          intervals % 10 * 0.125),
+                       loop(math_floor(notes / 10), 
+                            math_floor(intervals / 10)));
+    }
+    return is_null(notes)
+               ? null
+               : append(loop(head(notes), head(intervals)), 
+                        generate_sound_list(mapping, 
+                                            instrument, 
+                                            notes, 
+                                            intervals));
+}
+
+// G major scale
+const Gb5 = 78;
+const Ab5 = 80;
+const Bb5 =  82; 
+const Cb6 = 83; 
+const Db6 = 85; 
+const Eb6 = 87; 
+const F6 = 89;
+const Gb6 = 90;
+
+// basic structure of composing a melody
+// instrument(note, duration) 
+// adsr( sound )
+// list ( modified_sound, modified_sound, modified_sound )
+// consecutively ( sounds )
+// simultaneously ( sounds, sounds, sounds )
+// play(...)
+
+// const piano_notes = list(65, 64, 70, 69, 58, 56, 72...)
+// const piano_intervals = list(22282228, 622222211622 etc.)
+// interval % 10 * 0.125 ==> each note takes 1/8th of a beat
+// full = 1/1 note
+// half = 1/2 note
+// quarter = 1/4 note 
+// quaver = 1/8th note
+// semiquaver = 1/16th note
+
+// final play call: 
+// play(simultaneously(list(x, y, z)))
+// x y and z can be different instruments 
+// x y and z : consecutively(list(note1, note2, note3 etc.))
+
+// sky full of stars
+// piano 
+// bass drum
+// guitar
+// synthesizers 
