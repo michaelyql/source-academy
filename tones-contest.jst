@@ -1,63 +1,91 @@
+import { 
+    adsr, cello, play, piano, simultaneously, violin, 
+    consecutively, silence_sound, trombone, 
+    noise_sound, bell, square_sound
+} from 'sound';
 
-function parse_list(notes) {
-    return notes === 0
-            ? null
-            : pair(notes % 10, parse_list(math_floor(notes / 10)));
+// Viva la Vida by Coldplay (2008)
+// 120 bpm, common time (4/4) 
+// 30 bars per minute, 1 bar every 2 seconds
+// 8 quavers per bar ==> each quaver takes 1 / 8 * 2 = 0.25s 
+// G Major
+
+const snare_drum = consecutively(list(adsr(0.05, 0.95, 0, 0)(noise_sound(0.25)), 
+                                      silence_sound(0.25)));
+
+
+const drum = (itv) => {
+    return consecutively(list(adsr(0.05, 0.95, 0, 0)(square_sound(27.50, itv * 0.25)), 
+                         silence_sound(itv * 0.25)));
+};
+
+// play(snare_drum);
+// play(drum(0.5));
+
+
+function repeat(n, sound) {
+    return n < 1
+           ? list(sound) 
+           : consecutively(list(sound, repeat(n - 1, sound)));
 }
 
-function generate_sound_list(mapping, instrument, notes, intervals) {
-    function loop(mapping, intervals) {
-        return notes === 0 
-                ? null  
-                : pair(instrument(
-                          list_ref(mapping, notes % 10), 
-                          intervals % 10 * 0.125),
-                       loop(math_floor(notes / 10), 
-                            math_floor(intervals / 10)));
-    }
-    return is_null(notes)
-               ? null
-               : append(loop(head(notes), head(intervals)), 
-                        generate_sound_list(mapping, 
-                                            instrument, 
-                                            notes, 
-                                            intervals));
+function chain(sound1, sound2) {
+    return consecutively(list(sound1, sound2));
 }
 
-// G major scale
-const Gb5 = 78;
-const Ab5 = 80;
-const Bb5 =  82; 
-const Cb6 = 83; 
-const Db6 = 85; 
-const Eb6 = 87; 
-const F6 = 89;
-const Gb6 = 90;
+function hook(instrument, note1, note2) {
+    const qt1 = instrument(note1, 0.5); 
+    const qv1 = instrument(note1, 0.25);
+    const qt2 = instrument(note2, 0.5);
+    const qv2 = instrument(note2, 0.25); 
+    return consecutively(
+               list(qt1, qt1, qt1, qv1, qt2, qt2, qv2, qt2, qt2));
+}
 
-// basic structure of composing a melody
-// instrument(note, duration) 
-// adsr( sound )
-// list ( modified_sound, modified_sound, modified_sound )
-// consecutively ( sounds )
-// simultaneously ( sounds, sounds, sounds )
-// play(...)
+function bar1() {
+    const v1 = hook(violin, 60, 62);
+    const v2 = hook(violin, 69, 69);
+    const c1 = hook(cello, 72, 72);
+    const c2 = hook(cello, 67, 67);
+    const c3 = hook(cello, 60, 62);
+    const t1 = hook(trombone, 48, 50);
+    return simultaneously(list(v1, v2, c1, c2, c3, t1));
+}
 
-// const piano_notes = list(65, 64, 70, 69, 58, 56, 72...)
-// const piano_intervals = list(22282228, 622222211622 etc.)
-// interval % 10 * 0.125 ==> each note takes 1/8th of a beat
-// full = 1/1 note
-// half = 1/2 note
-// quarter = 1/4 note 
-// quaver = 1/8th note
-// semiquaver = 1/16th note
+function bar2() {
+    const v1 = hook(violin, 62, 64);
+    const v2 = hook(violin, 69, 69);
+    const c1 = hook(cello, 72, 72);
+    const c2 = hook(cello, 67, 67);
+    const c3 = hook(cello, 59, 59);
+    const t1 = hook(trombone, 55, 52);
+    return simultaneously(list(v1, v2, c1, c2, c3, t1));
+}
 
-// final play call: 
-// play(simultaneously(list(x, y, z)))
-// x y and z can be different instruments 
-// x y and z : consecutively(list(note1, note2, note3 etc.))
+//D5  E5  F#5  G5  A5  B5  C6
+//74  76  78   79  81  83  84
 
-// sky full of stars
-// piano 
-// bass drum
-// guitar
-// synthesizers 
+function verse1() {
+    const intervals = map((i => i * 0.25), 
+                          list(1, 2, 2, 6, 1, 6, 2, 1, 2, 1, 1, 2, 1, 2,
+                               1, 1, 1, 1, 1, 2, 6, 1, 6, 2, 1, 2, 2, 2, 
+                               1, 2, 1, 6));
+                               
+    const notes = list(83, 83, 83, 83, 84, 81, 81, 81, 81, 81, 79, 83, 74, 76,
+                       83, 83, 83, 83, 83, 83, 83, 84, 81, 81, 81, 81, 81, 81,
+                       83, 79, 78, 76);
+    
+    return chain(silence_sound(14.75), 
+                 consecutively(
+                     build_list((i => violin(list_ref(notes, i), 
+                                             list_ref(intervals, i))), 
+                                length(notes))));
+}
+
+const main_hook = adsr(0.1, 0.4, 0.8, 0.1)(repeat(4,chain(bar1(), bar2())));
+// play(repeat(4, snare_drum));
+const drums = repeat(64, drum(1));
+
+play(simultaneously(list(verse1(), main_hook, drums)));
+
+ 
