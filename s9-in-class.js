@@ -29,7 +29,8 @@ const double_counted = pair(pair(3,y), pair(7, y));
 const cycle = list(1,2,3);
 set_tail(tail(tail(cycle)), cycle); 
 
-count_pairs(cycle, []); 
+display(count_pairs(cycle, []));
+display(count_pairs(double_counted, []));
 
 // List version
 
@@ -50,4 +51,5 @@ function count_pairs_using_list(x) {
     return helper(x);
 }
 
-count_pairs_using_list(double_counted);
+display(count_pairs_using_list(double_counted));
+display(count_pairs_using_list(cycle)); 
