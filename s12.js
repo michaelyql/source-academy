@@ -13,6 +13,8 @@ functional programming language, including:
 Examples at the end of the program
 */
 
+const unassigned = () => undefined;
+
 function evaluate(program) { 
     let C = list(make_block(program));
     let S = null;
@@ -68,6 +70,7 @@ function evaluate(program) {
             const locals = scan_out_declarations(
                              block_body(command));
             const unassigneds = list_of_unassigned(locals);
+            display_list(unassigneds, 'UNASSIGNEDDDDDD');
             C = pair(block_body(command),
                   pair(make_env_instruction(E),
                     C));
@@ -81,11 +84,15 @@ function evaluate(program) {
                        declaration_value_expression(command)),
                      C);
         } else if (is_name(command)) {
+            if (lookup_symbol_value(symbol_of_name(command), E) === unassigned) {
+                error("HI THEREEEEEEEEEE");
+            }
             S = pair(lookup_symbol_value(
                          symbol_of_name(command),
                          E),
                      S);
         } else if (is_assignment(command)) {
+            display_list(command);
             C = pair(assignment_value_expression(command),
                   pair(make_assign_instruction(
                          assignment_symbol(command)),
@@ -275,8 +282,9 @@ function scan_out_declarations(component) {
            : null;
 }
 
+
 function list_of_unassigned(symbols) {
-    return map(symbol => "*unassigned*", symbols);
+    return map(symbol => unassigned, symbols);
 }
 
 function apply_binary(operator, op1, op2) {
@@ -939,7 +947,7 @@ function display_environment(E) {
 }
 
 function parse_and_evaluate(string) {
-    
+    display_list(parse(string));
     // Q2 
     // statically check that all names exist first
     // then evaluate the program
@@ -1057,6 +1065,9 @@ a;
 */
 
 parse_and_evaluate(`
-
-false ? abc(3) : 4;
+y = 42;
+const y = 42;
+const x = "x";
+const z = "***" + x + "***";
+z;
 `);
