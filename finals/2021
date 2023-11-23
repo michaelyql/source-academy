@@ -1,0 +1,87 @@
+function accumulate_iter(f, init, xs) {
+    let acc = init;
+    for (let i = length(xs) - 1; i >= 0; i = i - 1) {
+        const x = list_ref(xs, i);
+        acc = f(x, acc);
+    }
+    return acc;
+}
+
+accumulate_iter((x, y) => x / y, 2, list(24,16,8)); 
+
+function map(f, xs) {
+    return is_null(xs) ? null : pair(f(head(xs)), map(f, tail(xs))); 
+}
+
+function copy(xs) {
+    return map(x => x, xs);
+}
+
+function last_pair(xs) {
+    return is_null(tail(xs))
+          ? xs
+          : last_pair(tail(xs)); 
+}
+
+function hoopify(xs) {
+    const c = copy(xs);
+    const last = last_pair(c);
+    set_tail(last, c);
+    return c;
+}
+
+function partially_hoopify(xs, m) {
+    if (m === 0) {
+        return hoopify(xs);
+    } else {
+        return pair(head(xs), partially_hoopify(tail(xs), m - 1));
+    }
+}
+
+// draw_data(partially_hoopify(list(1,2,3,4,5), 2));
+
+function perms(n, m) {
+    if (n === 0 && m === 0) {
+        return list(null);
+    } else if (n === 0) {
+        return list(build_list(x => 1, m));
+    } else if (m === 0) {
+        return list(build_list(x => 0, n));
+    } else {
+        const ones = map(xs => pair(1, xs), perms(n, m - 1));
+        const zeroes = map(xs => pair(0, xs), perms(n - 1, m)); 
+        return append(ones, zeroes);
+    }
+}
+display_list(perms(2, 3));
+
+function scream_ref(s, n) {
+    function helper(s, i, k) {
+        return k === 0
+               ? head(s)
+               : helper(tail(s)(s, i + 1), i + 1, k - 1);
+    }
+    return helper(s, 0, n);
+}
+
+const fibonacci = pair(0, 
+                       (s1, ignore) => 
+                           pair(1, (s2, ignore) =>
+                                pair(head(s1) + head(s2),
+                                    (s3, ignore) => 
+                                    tail(tail(s1)(s2, 0))(s3, 0))));
+// scream_ref(fibonacci, 7); // returns 13
+
+function sum_list(xs) {
+    let sum = 0;
+    function helper(ys) {
+        if (is_null(ys)) {
+            return sum; 
+        } else {
+            sum = head(ys) + sum;
+            return helper(tail(ys));
+        }
+    }
+    return helper(xs); 
+}
+sum_list(list(1, 2, 3, 4, 5));
